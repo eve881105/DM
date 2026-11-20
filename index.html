@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1F3B63">
+<title>糖尿病自我照護</title>
+<style>
+  :root {
+    --primary: #1F3B63;
+    --primary-light: #2E5A93;
+    --accent: #E8734A;
+    --green: #1E6B3A;
+    --red: #B0302C;
+    --bg: #F2F5F9;
+    --card: #FFFFFF;
+    --text: #2A2F38;
+    --muted: #6B7280;
+    --radius: 16px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    font-family: "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    max-width: 520px;
+    margin: 0 auto;
+    min-height: 100vh;
+  }
+
+  /* ===== 頂部標題列 ===== */
+  header {
+    position: sticky; top: 0; z-index: 50;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: #fff;
+    padding: 14px 16px 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  }
+  header h1 { font-size: 18px; display: flex; align-items: center; gap: 8px; }
+  header .subtitle { font-size: 12px; opacity: .85; margin-top: 2px; }
+
+  /* ===== 分頁標籤 ===== */
+  .tabs {
+    display: flex;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    position: sticky; top: 0; z-index: 40;
+  }
+  .tabs button {
+    flex: 1;
+    padding: 12px 0;
+    border: none;
+    background: none;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--muted);
+    border-bottom: 3px solid transparent;
+    transition: .2s;
+  }
+  .tabs button.active { color: var(--primary); border-bottom-color: var(--accent); }
+  .tab-badge {
+    display: inline-block; margin-left: 4px;
+    font-size: 11px; background: var(--accent); color: #fff;
+    border-radius: 10px; padding: 1px 7px; vertical-align: middle;
+  }
+
+  main { padding: 14px 14px 90px; }
+  .page { display: none; }
+  .page.active { display: block; animation: fadeIn .25s; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  /* ===== 卡片 ===== */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 4px rgba(31,59,99,.08);
+  }
+  .card h2 {
+    font-size: 17px; color: var(--primary);
+    margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+  }
+  .card h2 .icon {
+    width: 30px; height: 30px; border-radius: 9px;
+    background: rgba(31,59,99,.08);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .card p { font-size: 14.5px; line-height: 1.7; margin-bottom: 8px; }
+  .card p:last-child { margin-bottom: 0; }
+
+  .pill-note {
+    display: block; border-radius: 10px; padding: 9px 12px;
+    font-size: 13.5px; line-height: 1.55; margin: 8px 0;
+  }
+  .warn { background: #FDEEEA; color: var(--red); }
+  .good { background: #EAF6EF; color: var(--green); }
+  .info { background: #EBF1F9; color: var(--primary); }
+
+  ul.list { list-style: none; }
+  ul.list li {
+    font-size: 14px; line-height: 1.65;
+    padding: 6px 0 6px 20px; position: relative;
+  }
+  ul.list li::before {
+    content: "•"; position: absolute; left: 6px; color: var(--accent); font-weight: bold;
+  }
+  ul.check li::before { content: "✓"; color: var(--green); }
+  ul.cross li::before { content: "✗"; color: var(--red); }
+
+  /* ===== 表格 ===== */
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { border: 1px solid #E3E8EF; padding: 8px 10px; text-align: left; line-height: 1.5; }
+  th { background: var(--primary); color: #fff; font-weight: 600; white-space: nowrap; }
+  td:first-child { white-space: nowrap; font-weight: 600; color: var(--primary); }
+
+  /* ===== 摺疊面板（照護） ===== */
+  .acc { border-radius: 14px; overflow: hidden; margin-bottom: 10px; background: #fff;
+         box-shadow: 0 1px 4px rgba(31,59,99,.08); }
+  .acc-head {
+    width: 100%; display: flex; align-items: center; gap: 10px;
+    padding: 14px 16px; border: none; background: none;
+    font-size: 15.5px; font-weight: 600; color: var(--primary); text-align: left;
+  }
+  .acc-head .num {
+    width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
+    background: var(--accent); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .acc-head .arrow { margin-left: auto; transition: .25s; color: var(--muted); font-size: 14px; }
+  .acc.open .arrow { transform: rotate(180deg); }
+  .acc-body { max-height: 0; overflow: hidden; transition: max-height .3s ease; }
+  .acc.open .acc-body { max-height: 1200px; }
+  .acc-inner { padding: 0 16px 14px; }
+  .acc-inner .label { font-size: 12.5px; color: var(--muted); margin-bottom: 4px; }
+
+  /* ===== 步驟 ===== */
+  .step { display: flex; gap: 12px; margin-bottom: 12px; }
+  .step .badge {
+    width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+    background: var(--primary); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 15px;
+  }
+  .step .txt { font-size: 14.5px; line-height: 1.65; padding-top: 4px; }
+  .step .txt b { color: var(--primary); }
+
+  /* ===== 測驗 ===== */
+  .quiz-card { margin-bottom: 16px; }
+  .q-topic {
+    display: inline-block; font-size: 12px; font-weight: 700;
+    color: #fff; background: var(--primary-light);
+    border-radius: 8px; padding: 3px 10px; margin-bottom: 8px;
+  }
+  .q-text { font-size: 15.5px; font-weight: 700; line-height: 1.6; margin-bottom: 12px; }
+  .opt {
+    display: block; width: 100%; text-align: left;
+    border: 1.5px solid #D8DFE8; background: #FAFBFD;
+    border-radius: 12px; padding: 12px 14px;
+    font-size: 14.5px; line-height: 1.5; margin-bottom: 8px;
+    color: var(--text); font-family: inherit;
+    transition: .15s; cursor: pointer;
+  }
+  .opt:active { transform: scale(.98); }
+  .opt.sel { border-color: var(--primary-light); background: #EBF1F9; font-weight: 600; }
+  .opt.correct { border-color: var(--green); background: #EAF6EF; color: var(--green); font-weight: 700; }
+  .opt.wrong { border-color: var(--red); background: #FDEEEA; color: var(--red); }
+  .opt .mark { margin-right: 8px; font-weight: 800; }
+  .feedback {
+    display: none; border-radius: 10px; padding: 10px 12px;
+    font-size: 13.5px; line-height: 1.6; margin-top: 4px;
+  }
+  .feedback.ok { display: block; background: #EAF6EF; color: var(--green); }
+  .feedback.no { display: block; background: #FDEEEA; color: var(--red); }
+
+  .score-bar {
+    position: sticky; bottom: 68px; z-index: 30;
+    margin: 0 14px 10px; display: none;
+  }
+  .score-bar .inner {
+    background: var(--primary); color: #fff;
+    border-radius: 14px; padding: 12px 16px;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 4px 14px rgba(31,59,99,.35);
+    font-size: 14.5px; font-weight: 600;
+  }
+  .score-bar .emoji { font-size: 22px; }
+
+  .btn-submit {
+    display: block; width: 100%;
+    background: linear-gradient(135deg, var(--accent), #D95B33);
+    color: #fff; border: none; border-radius: 14px;
+    padding: 15px; font-size: 16.5px; font-weight: 700;
+    font-family: inherit; cursor: pointer;
+    box-shadow: 0 4px 12px rgba(216,91,51,.35);
+    transition: .15s;
+  }
+  .btn-submit:active { transform: scale(.97); }
+  .btn-submit:disabled { opacity: .5; box-shadow: none; }
+  .btn-reset {
+    display: block; width: 100%; margin-top: 10px;
+    background: #fff; color: var(--primary); border: 1.5px solid var(--primary-light);
+    border-radius: 14px; padding: 12px; font-size: 15px; font-weight: 600;
+    font-family: inherit; cursor: pointer;
+  }
+
+  /* ===== 底部導覽 ===== */
+  nav {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 520px; z-index: 60;
+    background: #fff; display: flex;
+    box-shadow: 0 -2px 10px rgba(0,0,0,.1);
+  }
+  nav button {
+    flex: 1; padding: 9px 0 10px; border: none; background: none;
+    font-size: 11px; color: var(--muted); font-family: inherit;
+  }
+  nav button .ic { display: block; font-size: 21px; margin-bottom: 2px; }
+  nav button.active { color: var(--primary); font-weight: 700; }
+
+  .hero {
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    border-radius: var(--radius); color: #fff;
+    padding: 20px 16px; margin-bottom: 14px;
+  }
+  .hero .big { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+  .hero p { font-size: 13.5px; opacity: .92; line-height: 1.65; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🩺 糖尿病自我照護</h1>
+  <div class="subtitle">衛教手冊 + 隨堂測驗</div>
+</header>
+
+<div class="tabs">
+  <button class="active" data-page="learn" onclick="go('learn',this)">📖 衛教內容</button>
+  <button data-page="quiz" onclick="go('quiz',this)">✏️ 測驗<span class="tab-badge">5題</span></button>
+</div>
+
+<main>
+  <!-- ================= 衛教內容 ================= -->
+  <section class="page active" id="page-learn">
+    <div class="hero">
+      <div class="big">什麼是糖尿病？</div>
+      <p>食物中的醣類轉成葡萄糖，胰島素幫助葡萄糖進入細胞提供能量。當胰島素<b>分泌不足或作用不良</b>，葡萄糖無法完全進入細胞，血糖就會升高。</p>
+      <p style="margin-top:8px">👉 簡單來說：血液中的葡萄糖<b>長期偏高</b>。</p>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">⚠️</span>常見症狀（三多一少）</h2>
+      <p>有些人早期症狀不明顯，不能只靠感覺判斷血糖。</p>
+      <ul class="list">
+        <li>容易口渴、喝水變多（多喝）</li>
+        <li>容易飢餓、食量增加（多吃）</li>
+        <li>頻尿（多尿）</li>
+        <li>體重異常減輕（體重減輕）</li>
+        <li>視力模糊、容易疲倦</li>
+        <li>傷口癒合慢、黑色棘皮症</li>
+      </ul>
+      <span class="pill-note good">✅ 沒有不舒服，不代表血糖一定正常，仍需定期測量血糖、回診檢查。</span>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">🔬</span>診斷標準（符合其中一項）</h2>
+      <table>
+        <tr><th>檢驗項目</th><th>標準</th></tr>
+        <tr><td>HbA1c<br><span style="font-weight:400;color:var(--muted)">糖化血色素</span></td><td>≥ 6.5%</td></tr>
+        <tr><td>FPG<br><span style="font-weight:400;color:var(--muted)">空腹血糖</span></td><td>≥ 126 mg/dL<br><span style="font-size:12px;color:var(--muted)">（需空腹至少 8 小時）</span></td></tr>
+        <tr><td>75g OGTT<br><span style="font-weight:400;color:var(--muted)">葡萄糖耐受試驗</span></td><td>第 2 小時 ≥ 200 mg/dL</td></tr>
+        <tr><td>隨機血糖</td><td>有典型症狀＋任意時間 ≥ 200 mg/dL<br><span style="font-size:12px;color:var(--muted)">（符合即可確診，不需重複檢驗）</span></td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">🎯</span>控制目標「ABC」</h2>
+      <ul class="list">
+        <li><b>A｜糖化血色素 HbA1c：</b>一般 <b>&lt; 7.0%</b>（反映過去 2～3 個月平均血糖）</li>
+        <li><b>B｜血壓 Blood Pressure：</b><b>&lt; 130/80 mmHg</b>（定期測量、依醫囑用藥）</li>
+        <li><b>C｜壞膽固醇 LDL：</b>一般 &lt; 100 mg/dL；合併 2 項以上心血管危險因子 &lt; 70 mg/dL；曾心肌梗塞或中風 &lt; 55 mg/dL</li>
+      </ul>
+    </div>
+
+    <h2 style="font-size:16px;color:var(--primary);margin:6px 2px 10px">🧼 日常自我照護六大重點</h2>
+    <div id="acc-wrap">
+      <div class="acc open">
+        <button class="acc-head" onclick="toggleAcc(this)"><span class="num">1</span>血糖監測<span class="arrow">▼</span></button>
+        <div class="acc-body"><div class="acc-inner">
+          <p class="label">測量是為了做出正確調整，時間與頻率需遵照醫囑</p>
+          <ul class="list check">
+            <li>按照醫療團隊指示測量</li>
+            <li>記錄血糖、飲食、用藥、運動等</li>
+            <li>異常或反覆偏高／低時，帶紀錄回診</li>
+          </ul>
+          <ul class="list cross">
+            <li>只在不舒服時才測量</li>
+            <li>數值不好看就不記錄</li>
+            <li>自行更改藥量，或只看單次數值下結論</li>
+          </ul>
+        </div></div>
+      </div>
+
+      <div class="acc">
+        <button class="acc-head" onclick="toggleAcc(this)"><span class="num">2</span>飲食照護<span class="arrow">▼</span></button>
+        <div class="acc-body"><div class="acc-inner">
+          <p class="label">不是完全不能吃澱粉，重點是定時定量、均衡攝取</p>
+          <ul class="list check">
+            <li>每餐定時，注意飯、麵、麵包等醣類份量</li>
+            <li>選擇蔬菜、全穀雜糧與適量蛋白質</li>
+            <li>以水或無糖飲料取代含糖飲料</li>
+            <li>依營養師建議調整個人餐量</li>
+          </ul>
+          <ul class="list cross">
+            <li>完全不吃飯，之後卻暴食</li>
+            <li>以為果汁、蜂蜜水「天然健康」就大量喝</li>
+            <li>只吃水果當正餐</li>
+            <li>用「少吃一餐」補償上一餐吃太多</li>
+          </ul>
+        </div></div>
+      </div>
+
+      <div class="acc">
+        <button class="acc-head" onclick="toggleAcc(this)"><span class="num">3</span>口腔照護<span class="arrow">▼</span></button>
+        <div class="acc-body"><div class="acc-inner">
+          <p class="label">血糖控制不佳可能增加牙齦發炎及牙周組織破壞的風險</p>
+          <ul class="list check">
+            <li>每天早晚用含氟牙膏刷牙</li>
+            <li>每天用牙線或牙間刷清潔牙縫</li>
+            <li>定期牙科檢查與洗牙</li>
+            <li>牙齦出血、腫脹、口臭或牙齒鬆動 → 及早就醫</li>
+          </ul>
+          <ul class="list cross">
+            <li>只有牙痛才看牙醫</li>
+            <li>牙齦出血就不刷牙</li>
+            <li>只刷牙、不清潔牙縫</li>
+            <li>忽略口乾及牙齦腫脹</li>
+          </ul>
+        </div></div>
+      </div>
+
+      <div class="acc">
+        <button class="acc-head" onclick="toggleAcc(this)"><span class="num">4</span>身體照護<span class="arrow">▼</span></button>
+        <div class="acc-body"><div class="acc-inner">
+          <p class="label">血糖控制不佳可能增加皮膚感染、黴菌感染及傷口癒合不良風險</p>
+          <ul class="list check">
+            <li>用中性清潔用品，水溫 37–42°C，避免燙傷</li>
+            <li>洗澡後塗乳液，預防乾燥、龜裂</li>
+            <li>如廁後由前往後擦拭，保持清潔</li>
+            <li>定期修剪指甲；發現傷口紅腫及時就醫</li>
+          </ul>
+          <ul class="list cross">
+            <li>用腳直接試水溫</li>
+            <li>乳液塗抹在趾縫</li>
+            <li>蚊蟲叮咬後用力抓癢至破皮</li>
+            <li>穿著粗糙或過緊的衣物</li>
+          </ul>
+        </div></div>
+      </div>
+
+      <div class="acc">
+        <button class="acc-head" onclick="toggleAcc(this)"><span class="num">5</span>足部照護<span class="arrow">▼</span></button>
+        <div class="acc-body"><div class="acc-inner">
+          <p class="label">每天花 1 分鐘檢查；糖尿病可能讓感覺變差、傷口不易察覺</p>
+          <ul class="list check">
+            <li>每天查看足部有無傷口、水泡、紅腫</li>
+            <li>穿合腳包頭鞋，不赤腳走路</li>
+            <li>洗腳後擦乾趾縫，避免潮濕</li>
+            <li>發現傷口、紅腫或變色，儘快就醫</li>
+          </ul>
+          <ul class="list cross">
+            <li>用熱水泡腳或熱水袋暖腳</li>
+            <li>自行處理厚繭、雞眼、嵌甲</li>
+            <li>覺得不痛就代表沒有受傷</li>
+            <li>赤腳走路或穿不合腳的鞋</li>
+          </ul>
+        </div></div>
+      </div>
+
+      <div class="acc">
+        <button class="acc-head" onclick="toggleAcc(this)"><span class="num">6</span>運動照護<span class="arrow">▼</span></button>
+        <div class="acc-body"><div class="acc-inner">
+          <p class="label">規律比突然激烈更重要，循序漸進</p>
+          <ul class="list check">
+            <li>從散步等可持續的日常活動開始</li>
+            <li>逐漸增加時間與頻率</li>
+            <li>留意運動前後血糖</li>
+            <li>隨身攜帶快速補充糖分的食物</li>
+          </ul>
+          <ul class="list cross">
+            <li>平常不運動，突然高強度運動</li>
+            <li>空腹運動</li>
+            <li>身體不適仍勉強運動</li>
+            <li>把運動當成可以任意多吃的理由</li>
+          </ul>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">💊</span>藥物與胰島素</h2>
+      <p>規律使用、不自行調整。忘記服藥或害怕副作用時，應主動詢問醫療人員。</p>
+      <ul class="list">
+        <li>依處方劑量、時間使用藥物</li>
+        <li>胰島素依指示保存、注射與輪替部位</li>
+        <li>生病食慾下降或反覆低血糖 → 與醫療團隊討論調整用藥</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">🍬</span>低血糖怎麼辦？「15 法則」</h2>
+      <span class="pill-note warn">⚠️ 常見警訊：冒冷汗、手抖、心悸、飢餓、頭暈或意識改變</span>
+      <div class="step"><div class="badge">1</div><div class="txt"><b>先確認</b>：若可以，立即測量血糖，<b>低於 70 mg/dL 需處理</b>。</div></div>
+      <div class="step"><div class="badge">2</div><div class="txt"><b>補充糖分</b>：清醒且能安全吞嚥者，補充約 <b>15 g</b> 快速吸收的糖（方糖 3 顆、含糖飲料或果汁 150 cc）。</div></div>
+      <div class="step"><div class="badge">3</div><div class="txt"><b>15 分鐘後再測</b>：仍低於 70 mg/dL，重複補充並再次檢查。</div></div>
+      <span class="pill-note warn">🚫 不要用巧克力等高脂食物作為第一選擇，油脂會延緩糖分吸收。若昏迷或無法吞嚥，不要餵食，立即求助並打 119。</span>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">🆘</span>哪些情況需要盡快求助？</h2>
+      <span class="pill-note info">📞 儘快聯絡醫療團隊</span>
+      <ul class="list">
+        <li>血糖持續明顯偏高或反覆低血糖</li>
+        <li>足部出現傷口、紅腫、發熱或分泌物</li>
+        <li>生病、嘔吐、吃不下，血糖難以控制</li>
+      </ul>
+      <span class="pill-note warn">🚑 立即打 119</span>
+      <ul class="list">
+        <li>意識不清、抽搐或無法吞嚥</li>
+        <li>呼吸困難、嚴重虛弱或持續嘔吐</li>
+        <li>懷疑嚴重低血糖且無法自行處理</li>
+      </ul>
+      <span class="pill-note warn">⚠️ 緊急狀況打 119，不要讓意識不清的人吃任何東西。自我照護不是什麼都自己處理！</span>
+    </div>
+  </section>
+
+  <!-- ================= 測驗 ================= -->
+  <section class="page" id="page-quiz">
+    <div class="hero">
+      <div class="big">✏️ 隨堂測驗</div>
+      <p>共 5 題選擇題，請依衛教內容選出最適當的答案。作答後按「交卷看結果」計分並顯示解析。</p>
+    </div>
+    <div id="quiz-wrap"></div>
+    <button class="btn-submit" id="btnSubmit" onclick="submitQuiz()">交卷看結果</button>
+    <button class="btn-reset" onclick="resetQuiz()">🔄 重新作答</button>
+  </section>
+</main>
+
+<div class="score-bar" id="scoreBar"><div class="inner"><span class="emoji" id="scoreEmoji">🎉</span><span id="scoreText"></span></div></div>
+
+<nav>
+  <button class="active" data-page="learn" onclick="go('learn',this)"><span class="ic">📖</span>衛教內容</button>
+  <button data-page="quiz" onclick="go('quiz',this)"><span class="ic">✏️</span>測驗</button>
+</nav>
+
+<script>
+/* ===== 分頁切換 ===== */
+function go(page, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.tabs button, nav button').forEach(b =>
+    b.classList.toggle('active', b.dataset.page === page));
+  window.scrollTo({ top: 0 });
+}
+
+/* ===== 摺疊面板 ===== */
+function toggleAcc(head) { head.parentElement.classList.toggle('open'); }
+
+/* ===== 測驗題目 ===== */
+const questions = [
+  { topic: '飲食', q: '關於糖尿病患者的飲食，下列敘述何者正確？',
+    opts: ['完全不能吃澱粉與水果，才控制得好',
+           '重點是定時定量、均衡攝取，並注意醣類份量',
+           '果汁和蜂蜜水很天然健康，可以大量喝',
+           '少吃一餐，補償上一餐吃太多'],
+    ans: 1, exp: '飲食重點是定時定量、均衡攝取；澱粉與水果不是不能吃，而是要注意種類與份量。果汁、蜂蜜水雖天然仍含大量糖分，不宜大量飲用；「少吃一餐」易導致之後暴食。' },
+  { topic: '藥物', q: '血糖恢復正常後，應該怎麼做？',
+    opts: ['自行停藥', '自行把藥量加倍、減少回診', '依醫囑用藥，調整用藥需和醫療團隊討論', '忘記服藥時，下次一次補吃雙倍劑量'],
+    ans: 2, exp: '血糖正常不代表可以自行停藥或改量；忘記服藥也不可補吃雙倍劑量，任何調整都需由醫療團隊評估。' },
+  { topic: '低血糖', q: '若清醒且能吞嚥，血糖低於 70 mg/dL，最適當的第一步是？',
+    opts: ['補充約 15 克快速吸收的糖分，15 分鐘後再測', '先睡一覺再說', '吃巧克力補充，比較方便', '立刻做運動讓身體恢復'],
+    ans: 0, exp: '採「15–15 法則」：補充約 15 克快速吸收的糖（如方糖 3 顆、含糖飲料或果汁 150 cc），15 分鐘後再測；巧克力含高油脂會延緩糖分吸收。意識不清時不可餵食，應立即打 119。' },
+  { topic: '足部照護', q: '關於糖尿病足部照護，下列何者正確？',
+    opts: ['覺得不痛，就代表足部沒有受傷', '每天花 1 分鐘查看足部有無傷口、水泡、紅腫', '用熱水泡腳或熱水袋暖腳，促進血液循環', '厚繭、雞眼可以自己在家處理'],
+    ans: 1, exp: '神經病變可能讓感覺變差，不痛不代表沒受傷，應每天檢查足部；熱水泡腳易燙傷；厚繭、雞眼應由醫護人員處理，不可自行剪除。' },
+  { topic: '緊急處理', q: '出現下列哪種情況時，應立即打 119 求助？',
+    opts: ['血糖稍微偏高，但精神良好', '意識不清、抽搐或無法吞嚥', '偶爾一次血糖偏低，已自行補充糖分', '牙齦輕微出血'],
+    ans: 1, exp: '意識不清、抽搐或無法吞嚥屬緊急狀況，應立即打 119，且不要餵食任何東西。其他選項可自行處理或回診追蹤即可。' },
+];
+
+const letters = ['A', 'B', 'C', 'D'];
+let submitted = false;
+
+function buildQuiz() {
+  submitted = false;
+  document.getElementById('scoreBar').style.display = 'none';
+  document.getElementById('btnSubmit').style.display = 'block';
+  const wrap = document.getElementById('quiz-wrap');
+  wrap.innerHTML = questions.map((item, qi) => `
+    <div class="card quiz-card" id="qc${qi}">
+      <span class="q-topic">${item.topic}</span>
+      <div class="q-text">${qi + 1}. ${item.q}</div>
+      ${item.opts.map((o, oi) =>
+        `<button class="opt" data-q="${qi}" data-o="${oi}" onclick="pick(${qi},${oi},this)">
+           <span class="mark">${letters[oi]}</span>${o}</button>`).join('')}
+      <div class="feedback" id="fb${qi}"></div>
+    </div>`).join('');
+}
+
+function pick(qi, oi, btn) {
+  if (submitted) return;
+  document.querySelectorAll(`#qc${qi} .opt`).forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+
+function submitQuiz() {
+  const picks = [];
+  for (let qi = 0; qi < questions.length; qi++) {
+    const sel = document.querySelector(`#qc${qi} .opt.sel`);
+    picks.push(sel ? +sel.dataset.o : -1);
+  }
+  if (picks.includes(-1)) {
+    const first = document.getElementById('qc' + picks.indexOf(-1));
+    first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    alert(`第 ${picks.indexOf(-1) + 1} 題還沒作答喔！`);
+    return;
+  }
+  submitted = true;
+  let score = 0;
+  questions.forEach((item, qi) => {
+    const right = item.ans, mine = picks[qi];
+    if (mine === right) score++;
+    document.querySelectorAll(`#qc${qi} .opt`).forEach(b => {
+      const oi = +b.dataset.o;
+      if (oi === right) b.classList.add('correct');
+      if (oi === mine && mine !== right) b.classList.add('wrong');
+    });
+    const fb = document.getElementById('fb' + qi);
+    fb.className = 'feedback ' + (mine === right ? 'ok' : 'no');
+    fb.innerHTML = (mine === right ? '✅ 答對了！' : '❌ 答錯了，正確答案是 ' + letters[right] + '。') + '<br>' + item.exp;
+  });
+  document.getElementById('btnSubmit').style.display = 'none';
+  const bar = document.getElementById('scoreBar');
+  const msg = score === 5 ? ['🏆', `滿分！${score} / 5 題全對，太棒了！`]
+            : score >= 3 ? ['👏', `答對 ${score} / 5 題，做得不錯，再複習看看錯的題目！`]
+            : ['💪', `答對 ${score} / 5 題，建議回到衛教內容再複習一次！`];
+  document.getElementById('scoreEmoji').textContent = msg[0];
+  document.getElementById('scoreText').textContent = msg[1];
+  bar.style.display = 'block';
+  document.getElementById('qc0').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function resetQuiz() { buildQuiz(); window.scrollTo({ top: 0 }); }
+
+buildQuiz();
+</script>
+</body>
+</html>
